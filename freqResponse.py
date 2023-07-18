@@ -54,28 +54,6 @@ class FreqencyResposne:
     #   H(jw) = (jw I - Nr dv/dx L )^{-1} Nr dv/dp
     def getFrequencyResponse(self, r, startFrequency, numberOfDecades, numberOfPoints,
                       parameterId, variableId, useDB=True, useHz = True):
-           
-        try:
-           r.steadyState()
-        except Exception as e:
-            raise Exception ("Can't find the steady state: " + str (e))
-            
-        # Get the link matrix in case there are conserved moieties,
-        # equals the identity matrix if not
-        linkMatrix = r.getLinkMatrix()
-        # Convert Jacobian matrix to complex matrix
-        Jac = r.getFullJacobian()
-        Jac = np.array (Jac)
-        Jac = Jac.astype (complex)
-        # Compute Jac*linkMatrix
-        JacL = np.matmul (Jac, linkMatrix)
-    
-        # Will need ee for the flux TFs mwhen implemented
-        #ee = r.getUnscaledElasticityMatrix()
-        # Convert stoich matrix to complex matrix
-        Nr = r.getReducedStoichiometryMatrix()
-        Nr = np.array (Nr)
-        Nr = Nr.astype (complex)
     
         numReactions = r.getNumReactions()
         numFloatingSpecies = r.getNumFloatingSpecies()
@@ -92,6 +70,28 @@ class FreqencyResposne:
            if parameterId not in globalParameterIds:
                raise Exception ("Can't find parameter:" + variableName + " in the model")     
                
+        try:
+           r.steadyState()
+        except Exception as e:
+            raise Exception ("Can't find the steady state: " + str (e))
+               
+        # Get the link matrix in case there are conserved moieties,
+        # equals the identity matrix if not
+        linkMatrix = r.getLinkMatrix()
+        # Convert Jacobian matrix to complex matrix
+        Jac = r.getFullJacobian()
+        Jac = np.array (Jac)
+        Jac = Jac.astype (complex)
+        # Compute Jac*linkMatrix
+        JacL = np.matmul (Jac, linkMatrix)
+    
+        # Will need ee for the flux TFs mwhen implemented
+        #ee = r.getUnscaledElasticityMatrix()
+        # Convert stoich matrix to complex matrix
+        Nr = r.getReducedStoichiometryMatrix()
+        Nr = np.array (Nr)
+        Nr = Nr.astype (complex)
+        
         resultArray = np.zeros ((numberOfPoints, 3))
     
         identMatrix = np.identity(numFloatingSpecies, dtype=complex)
