@@ -10,7 +10,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-class FreqencyResposne:
+class FreqencyResponse:
     
     def __init__(self, r):
         self.r = r
@@ -117,7 +117,7 @@ class FreqencyResposne:
                
         # This is to prevent discontinous jumps at the 180 degree points
         resultArray[:,2] = np.unwrap(resultArray[:,2])
-        # COnvert to degrees
+        # Convert to degrees
         resultArray[:,2] = (180/math.pi)*resultArray[:,2]
         # Store result internally so that it can be used by plot
         self.results = resultArray
@@ -130,7 +130,7 @@ class FreqencyResposne:
         plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
         plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
         plt.minorticks_on()
-        plt.plot (self.results[:,0], self.results[:,1], 'r')
+        plt.plot (self.results[:,0], self.results[:,1], 'r', linewidth=1)
         plt.ylabel('Amp')
         
         plt.subplot(212)
@@ -138,8 +138,9 @@ class FreqencyResposne:
         plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
         plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
         plt.minorticks_on()
-        plt.plot (self.results[:,0], self.results[:,2], 'r')
-        plt.ylabel('Phase')
-               
+        plt.plot (self.results[:,0], self.results[:,2], 'r', linewidth=1)
+        plt.ylabel('Phase (Degrees)')
+        plt.xlabel ('Frequency')       
+        
         plt.show()
     

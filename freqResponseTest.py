@@ -24,7 +24,7 @@ r = te.loada("""
     Xo = 1
 """)
  
-fr = FreqencyResposne(r)
+fr = FreqencyResponse(r)
 results = fr.getFrequencyResponse(0.01, 3, 100, 'Xo', 'S5')
 
 fr.plot()
