@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 class FreqencyResposne:
     
-    def __init__(self):
-        pass
+    def __init__(self, r):
+        self.r = r
     
     def getLogSpace (self, startW, numDecades, numPoints):
         d1 = 0
@@ -32,35 +32,19 @@ class FreqencyResposne:
         else:
            return math.atan2(val.imag, val.real)
 
-  
-    # This function is used in roadrunners freq analysis code
-    # Note sure if its working quite right
-    def getAdjustment(self, z):
-        adjustment = 0
-        if (z.real >= 0 and z.imag >= 0):
-            adjustment = 0
-        elif (z.real >= 0 and z.imag < 0):
-            adjustment = 360
-        elif (z.real < 0 and z.imag >= 0):
-            adjustment = 0
-        else:
-            adjustment = 360
-    
-        return adjustment
-
 
     # Implement instead:
     # This should be able to handle models with conserved cycles
     #   H(jw) = (jw I - Nr dv/dx L )^{-1} Nr dv/dp
-    def getFrequencyResponse(self, r, startFrequency, numberOfDecades, numberOfPoints,
+    def getFrequencyResponse(self, startFrequency, numberOfDecades, numberOfPoints,
                       parameterId, variableId, useDB=True, useHz = True):
     
-        numReactions = r.getNumReactions()
-        numFloatingSpecies = r.getNumFloatingSpecies()
-        reactionIds = r.getReactionIds()
-        speciesIds = r.getFloatingSpeciesIds()
-        boundarySpeciesIds = r.getBoundarySpeciesIds()
-        globalParameterIds = r.getGlobalParameterIds()
+        numReactions = self.r.getNumReactions()
+        numFloatingSpecies = self.r.getNumFloatingSpecies()
+        reactionIds = self.r.getReactionIds()
+        speciesIds = self.r.getFloatingSpeciesIds()
+        boundarySpeciesIds = self.r.getBoundarySpeciesIds()
+        globalParameterIds = self.r.getGlobalParameterIds()
     
         if variableId not in speciesIds:
            raise Exception ("Can't find species:" + variableId + " in the model")     
@@ -71,24 +55,24 @@ class FreqencyResposne:
                raise Exception ("Can't find parameter:" + variableName + " in the model")     
                
         try:
-           r.steadyState()
+           self.r.steadyState()
         except Exception as e:
             raise Exception ("Can't find the steady state: " + str (e))
                
         # Get the link matrix in case there are conserved moieties,
         # equals the identity matrix if not
-        linkMatrix = r.getLinkMatrix()
+        linkMatrix = self.r.getLinkMatrix()
         # Convert Jacobian matrix to complex matrix
-        Jac = r.getFullJacobian()
+        Jac = self.r.getFullJacobian()
         Jac = np.array (Jac)
         Jac = Jac.astype (complex)
         # Compute Jac*linkMatrix
         JacL = np.matmul (Jac, linkMatrix)
     
         # Will need ee for the flux TFs mwhen implemented
-        #ee = r.getUnscaledElasticityMatrix()
+        #ee = self.r.getUnscaledElasticityMatrix()
         # Convert stoich matrix to complex matrix
-        Nr = r.getReducedStoichiometryMatrix()
+        Nr = self.r.getReducedStoichiometryMatrix()
         Nr = np.array (Nr)
         Nr = Nr.astype (complex)
         
@@ -107,7 +91,7 @@ class FreqencyResposne:
             T3 = np.matmul(inverse, Nr)
             dvdp = np.zeros(numReactions, dtype=complex)
             for k in range (numReactions): 
-                val = r.getUnscaledParameterElasticity(reactionIds[k], parameterId);
+                val = self.r.getUnscaledParameterElasticity(reactionIds[k], parameterId);
                 dvdp[k] = val+0j
             T4 = np.matmul (T3, dvdp)
             
@@ -120,7 +104,7 @@ class FreqencyResposne:
                     resultArray[i, 1] = dw
         
                     val = complex (T4[j], 0)
-                    phase = (180.0 / math.pi) * self.getPhase(val) + self.getAdjustment(val)
+                    phase = self.getPhase(val)
                     resultArray[i, 2] = phase
                     break
     
@@ -131,6 +115,10 @@ class FreqencyResposne:
                # Store frequency, leave as rad/sec
                resultArray[i,0] = w[i]
                
+        # This is to prevent discontinous jumps at the 180 degree points
+        resultArray[:,2] = np.unwrap(resultArray[:,2])
+        # COnvert to degrees
+        resultArray[:,2] = (180/math.pi)*resultArray[:,2]
         # Store result internally so that it can be used by plot
         self.results = resultArray
         return resultArray
