@@ -10,7 +10,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-class FreqencyResposne:
+class FrequencyResponse:
     
     def __init__(self):
         pass

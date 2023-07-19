@@ -9,9 +9,10 @@ import tellurium as te
 import roadrunner
 import numpy as np
 import matplotlib.pyplot as plt
-from freqResponse import *
+from freqResponse import FrequencyResponse
+import unittest
 
-r = te.loada("""
+ROADRUNNER = te.loada("""
     $Xo -> S1; k1*Xo
     S1 -> S2; k2*S1
     S2 -> S3; k3*S2
@@ -23,7 +24,7 @@ r = te.loada("""
     Xo = 1
 """)
  
-fr = FreqencyResposne()
+fr = FrequencyResponse()
 results = fr.getFrequencyResponse(r, 0.01, 3, 100, 'Xo', 'S3')
 
 fr.plot()
