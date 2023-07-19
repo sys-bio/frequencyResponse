@@ -133,6 +133,7 @@ class FrequencyResponse:
                
         # Store result internally so that it can be used by plot
         self.results = resultArray
+        import pdb; pdb.set_trace()
         return resultArray
 
     def plot (self):
