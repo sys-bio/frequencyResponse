@@ -148,7 +148,7 @@ class FreqencyResponse:
         # Check that parameter name exists
         if parameterId not in boundarySpeciesIds:
            if parameterId not in globalParameterIds:
-               raise Exception ("Can't find parameter:" + variableName + " in the model")     
+               raise Exception ("Can't find parameter:" + parameterId + " in the model")     
                
         try:
            self.r.steadyState()
