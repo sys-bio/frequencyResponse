@@ -31,18 +31,38 @@ r2 = te.loada('''
        S1 = 10; S2 = 0
 ''')
 
-fr = FreqencyResponse(r1)
-results = fr.getSpeciesFrequencyResponse(0.01, 3, 100, 'Xo', 'S2')
-fr.plot()
 
-# fr = FreqencyResponse(r2)
-# results = fr.getSpeciesFrequencyResponse(0.01, 3, 100, 'k1', 'S2')
-# fr.plot()
+# Almost oscillating model
+r3 = te.loada ('''
+model feedback()
+  // Reactions:
+  J0: $X0 -> S1; (VM1 * X0)/(1 + X0 + S3^h);
+  J1: S1 -> S2; k2*S1
+  J2: S2 -> S3; k4*S2
+  #J3: S3 -> S4; k3*S3
+  J4: S3 -> $X1; k5*S3
+
+  // Species initializations:
+  S1 = 0; S2 = 0; S3 = 0;
+  S4 = 0; X0 = 10; X1 = 0;
+  k2 = 0.1; k3 = 0.12; k4 = 0.11; k5 = 0.14
+
+  // Variable initialization:
+  VM1 = 10; Keq1 = 10; h = 8.3; V4 = 2.5; KS4 = 0.5;
+end''')
+
+
+fr = FreqencyResponse(r1)
+results = fr.getSpeciesFrequencyResponse(0.01, 3, 100, 'k1', 'S2')
+fr.plot()
 
 #fr = FreqencyResponse(r2)
 #results = fr.getFluxFrequencyResponse(0.01, 3, 100, 'k1', 'J1')
 #fr.plot()    
     
+# fr = FreqencyResponse(r3)
+# results = fr.getSpeciesFrequencyResponse(0.01, 3, 1000, 'X0', 'S3', useDB=False)
+# fr.plot()
    
 
 
