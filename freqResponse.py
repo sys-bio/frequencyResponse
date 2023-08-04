@@ -93,9 +93,6 @@ class FreqencyResponse:
                 dvdp[k] = val+0j
             T4 = np.matmul (T3, dvdp)       
             
-            print ('T4 = ', T4)
-            return
-            
             # Next compute H^v (jw) = dv/ds H(jw) + dv/dp            
             T4 = np.matmul (ee, T4) + dvdp
 
