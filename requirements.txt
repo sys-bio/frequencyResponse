@@ -1,7 +1,4 @@
-jupyterlab
 numpy
 matplotlib
-pandas
-control
-seaborn
 tellurium
+math

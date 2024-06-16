@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import roadrunner
 import numpy as np
 import math
@@ -38,6 +39,7 @@ class FreqencyResponse:
         self.r = r
         self.r.conservedMoietyAnalysis = True
     
+    # Gets a range of values spread along a log scale
     def getLogSpace (self, startW, numDecades, numPoints):
         d1 = 0
         y = np.zeros (numPoints)
@@ -55,9 +57,39 @@ class FreqencyResponse:
         else:
            return math.atan2(val.imag, val.real)
 
+    # Compute the frequency response with respect to a flux
     # H_J (jw) = dv/ds H(jw) + dvdp
     def getFluxFrequencyResponse(self, startFrequency, numberOfDecades, numberOfPoints,
                       parameterId, variableId, useDB=True, useHz = True):
+        """
+           Compute the flux frequency response 
+ 
+           Parameters
+           ----------
+           startFrequency : float
+               Start frequency for the frequency response
+           numberOfDecades : integer
+               How many decades to use beyond the starting frequency
+           numberOfPoints : integer
+               How many data points to generate, too few and the Bode plots will not look smooth
+           parameterId : string
+               Name of the input/parameter in the model
+           variableId : string
+               Name of the reaction which carries the flux
+           useDB : boolean
+               Use Decibels onthe y-axis in the amplitude plot
+            useHz  boolean
+               Use Hz or rads/sec for the frequency x-axis  
+         
+          Returns
+          -------
+           numpy array
+             Returns a numpy array containins frequency response
+             First column = frequency 
+             Second column = amplitude
+             Third column = phase
+       """
+    
         numReactions = self.r.getNumReactions()
         numFloatingSpecies = self.r.getNumIndFloatingSpecies()
         reactionIds = self.r.getReactionIds()
@@ -65,12 +97,12 @@ class FreqencyResponse:
         globalParameterIds = self.r.getGlobalParameterIds()
         
         if variableId not in reactionIds:
-           raise Exception ("Can't find reaction:" + variableId + " in the model")     
+           raise Exception ("Can't find the reaction:" + variableId + " in the model")     
                
-        # Check that parameter name exists
+        # Check that the parameter name exists
         if parameterId not in boundarySpeciesIds:
            if parameterId not in globalParameterIds:
-               raise Exception ("Can't find parameter:" + parameterId + " in the model")     
+               raise Exception ("Can't find the parameter/input:" + parameterId + " in the model")     
        
         try:
            self.r.steadyState()
@@ -151,6 +183,34 @@ class FreqencyResponse:
     #   H(jw) = L (jw I - Nr dv/dx L )^{-1} Nr dv/dp
     def getSpeciesFrequencyResponse(self, startFrequency, numberOfDecades, numberOfPoints,
                       parameterId, variableId, useDB=True, useHz = True):
+        """
+           Compute the species concentration frequency response 
+ 
+           Parameters
+           ----------
+           startFrequency : float
+               Start frequency for the frequency response
+           numberOfDecades : integer
+               How many decades to use beyond the starting frequency
+           numberOfPoints : integer
+               How many data points to generate, too few and the Bode plots will not look smooth
+           parameterId : string
+               Name of the input/parameter in the model
+           variableId : string
+               Name of the species that will be the output for the frequency response
+           useDB : boolean
+               Use Decibels onthe y-axis in the amplitude plot
+            useHz  boolean
+               Use Hz or rads/sec for the frequency x-axis  
+         
+          Returns
+          -------
+           numpy array
+             Returns a numpy array containins frequency response
+             First column = frequency 
+             Second column = amplitude
+             Third column = phase
+       """
     
         numReactions = self.r.getNumReactions()
         numIndependentFloatingSpecies = self.r.getNumIndFloatingSpecies()
@@ -242,27 +302,49 @@ class FreqencyResponse:
         self.results = resultArray
         return resultArray
 
-    def plot (self, aresult=None):
-    
+
+    def plot (self, aresult=None, pdf=None, amplitude=True, phase=True):
+        """
+           Plot the Bode plots for the last frequency analysis carried out
+ 
+           Parameters
+           ----------
+           aresult : numpy array
+              Use this to supply your own numy array to plot. Not required very often
+           pdf : string
+               Set to the name of file name (with path if required) if you want a pdf of the plots
+           ampltiude, phase : boolean
+               Can be use to indicate that you only want the amplitude plot or the phase plot.
+               By default both amplitude and phase responses are plotted. 
+       """
+       
         if aresult == None:
            aresult = self.results
-             
-        plt.subplot(211)
-        plt.xscale("log")
-        plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
-        plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
-        plt.minorticks_on()
-        plt.plot (aresult[:,0], aresult[:,1], 'r', linewidth=1)
-        plt.ylabel('Amp')
+           
+        if amplitude:
+            plt.subplot(211)
+            plt.xscale("log")
+            plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
+            plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
+            plt.minorticks_on()
+            #plt.ylim((-100,0))
+            plt.plot (aresult[:,0], aresult[:,1], 'r', linewidth=1.5)
+            plt.ylabel('Amp')
+            # In case they only ask for amplitude plot, we will need a x label
+            if not phase:
+               plt.xlabel ('Frequency') 
+            
+        if phase:
+            plt.subplot(212)
+            plt.xscale("log")
+            plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
+            plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
+            plt.minorticks_on()
+            plt.plot (aresult[:,0], aresult[:,2], 'r', linewidth=1.5)
+            plt.ylabel('Phase (Degrees)')
+            plt.xlabel ('Frequency') 
         
-        plt.subplot(212)
-        plt.xscale("log")
-        plt.grid(visible=True, which='major', color='k', linestyle='-', alpha=0.3)
-        plt.grid(visible=True, which='minor', color='k', linestyle='-', alpha=0.3)
-        plt.minorticks_on()
-        plt.plot (aresult[:,0], aresult[:,2], 'r', linewidth=1)
-        plt.ylabel('Phase (Degrees)')
-        plt.xlabel ('Frequency')       
-        
+        if pdf != None:
+            plt.savefig(pdf)
         plt.show()
     
