@@ -1,9 +1,13 @@
 # frequencyResponse
 Computes the frequency response for a SBML or Antimony biochemmcal reaction model.
 
+This isn't a pip install package.
+
+Instead copy the freqResponse.py to where you will do your work. 
+
 Run the freqResponseTest.py to try it out.
 
-To use
+Exmaple of how to use the code:
 
 ```
 import tellurium as te
@@ -12,7 +16,7 @@ import matplotlib.pyplot as plt
 from freqResponse import *
 
 # Two step pathway
-r0= te.loada('''
+r0 = te.loada('''
    $Xo -> S1; k1*Xo
     S1 -> ;   k2*S1
     
